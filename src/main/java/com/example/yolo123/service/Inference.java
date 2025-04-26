@@ -133,7 +133,7 @@ public class Inference {
                     boxes.add(new Rect(left, top, width, height));
                 }
             } else {
-                // YOLOv5处理方式
+                // YOLOv5
                 float confidence = data.get(i, 4);
 
                 if (confidence >= modelConfidenceThreshold) {

@@ -23,7 +23,6 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -145,7 +144,8 @@ public class DetectionController {
      * @param filename 结果图像文件名
      * @return 图像文件
      */
-    @RequestMapping("/result")
+    @GetMapping("/result")
+    @Operation(summary = "获取结果图像文件")
     public ResponseEntity<byte[]> getResultImage(@RequestParam("filename") String filename) throws IOException {
         Path resultPath = resultDir.resolve(filename);
         File resultFile = resultPath.toFile();
