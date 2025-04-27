@@ -1,0 +1,22 @@
+# ?????
+server:
+  port: 8099
+
+# ??????
+spring:
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# Knife4j??
+knife4j:
+  enable: true
+  setting:
+    language: zh_CN
+
+# ??????
+app:
+  upload-dir: C:/Users/Su180/IdeaProjects/yolocv/yolo123/uploads
+  result-dir: C:/Users/Su180/IdeaProjects/yolocv/yolo123/results
+  model-path: C:/Users/Su180/IdeaProjects/yolocv/yolo123/src/main/resources/yolo-model/yolov5nu.onnx

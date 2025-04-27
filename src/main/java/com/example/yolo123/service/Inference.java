@@ -51,11 +51,11 @@ public class Inference {
     private void loadOnnxNetwork() {
         net = opencv_dnn.readNetFromONNX(modelPath);
         if (cudaEnabled) {
-            System.out.println("Running on CUDA");
+            log.info("Running on CUDA");
             net.setPreferableBackend(opencv_dnn.DNN_BACKEND_CUDA);
             net.setPreferableTarget(opencv_dnn.DNN_TARGET_CUDA);
         } else {
-            System.out.println("Running on CPU");
+            log.info("Running on CPU");
             net.setPreferableBackend(opencv_dnn.DNN_BACKEND_OPENCV);
             net.setPreferableTarget(opencv_dnn.DNN_TARGET_CPU);
         }

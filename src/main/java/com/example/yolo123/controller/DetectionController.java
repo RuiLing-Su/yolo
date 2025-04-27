@@ -1,41 +1,43 @@
 package com.example.yolo123.controller;
 
-import com.example.yolo123.model.Detection;
 import com.example.yolo123.service.DetectionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
-import org.bytedeco.opencv.global.opencv_imgcodecs;
-import org.bytedeco.opencv.global.opencv_imgproc;
-import org.bytedeco.opencv.opencv_core.Mat;
-import org.bytedeco.opencv.opencv_core.Point;
-import org.bytedeco.opencv.opencv_core.Scalar;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.FileSystemResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
 @RestController
 @RequestMapping("/detection")
-@Tag(name = "预测")
+@Tag(name = "检测")
 public class DetectionController {
     private final DetectionService detectionService;
 
-    private final Path uploadDir = Paths.get("C:\\Users\\Su180\\IdeaProjects\\yolocv\\yolo123\\uploads");
-    private final Path resultDir = Paths.get("C:\\Users\\Su180\\IdeaProjects\\yolocv\\yolo123\\results");
+    private final Path uploadDir;
+    private final Path resultDir;
 
-    public DetectionController(DetectionService detectionService) {
+    public DetectionController(
+            DetectionService detectionService,
+            @Value("${app.upload-dir}") String uploadDirPath,
+            @Value("${app.result-dir}") String resultDirPath) {
         this.detectionService = detectionService;
+        this.uploadDir = Paths.get(uploadDirPath);
+        this.resultDir = Paths.get(resultDirPath);
         try {
             if (!Files.exists(uploadDir)) {
                 Files.createDirectories(uploadDir);
@@ -51,93 +53,20 @@ public class DetectionController {
     @PostMapping(value = "/detect", produces = MediaType.APPLICATION_JSON_VALUE)
     @Operation(summary = "处理图像上传和对象检测", description = "传入图片")
     public ResponseEntity<?> detectObjects(@RequestParam("file") MultipartFile file) throws IOException {
-
         // 保存上传的文件
         String filename = file.getOriginalFilename();
         Path filePath = uploadDir.resolve(filename);
         file.transferTo(filePath.toFile());
 
-        // 加载图像
-        Mat image = opencv_imgcodecs.imread(filePath.toString());
-        if (image.empty()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(Map.of("error", "无法读取图像文件"));
-        }
-
-        List<Detection> detections = detectionService.detect(String.valueOf(filePath));
-
-        // 在图像上绘制检测结果
-        for (Detection detection : detections) {
-            // 绘制边界框
-            opencv_imgproc.rectangle(
-                    image,
-                    detection.getBox(),
-                    detection.getColor(),
-                    2,
-                    opencv_imgproc.LINE_8,
-                    0);
-
-            // 准备标签文本
-            String label = detection.getClassName() + ": " + String.format("%.2f", detection.getConfidence());
-
-            // 获取文本大小
-            int[] baseLine = new int[1];
-            org.bytedeco.opencv.opencv_core.Size labelSize = opencv_imgproc.getTextSize(
-                    label,
-                    opencv_imgproc.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    1,
-                    baseLine);
-
-            // 绘制标签背景
-            // 计算标签位置，确保不超出图像边界
-            int x = Math.max(detection.getBox().x(), 0);
-            int y = Math.max(detection.getBox().y() - labelSize.height(), 0);
-
-            // 如果标签太靠近图像顶部，则将其放在框的底部
-            if (y < 5) {
-                y = detection.getBox().y() + detection.getBox().height();
-            }
-
-            // 确保标签宽度不超出图像
-            int width = Math.min(labelSize.width(), image.cols() - x);
-
-            // 绘制标签背景
-            opencv_imgproc.rectangle(
-                    image,
-                    new Point(x, y),
-                    new Point(x + width, y + labelSize.height() + baseLine[0]),
-                    detection.getColor()
-            );
-
-            // 绘制标签文本
-            opencv_imgproc.putText(
-                    image,
-                    label,
-                    new Point(x, y + labelSize.height()),
-                    opencv_imgproc.FONT_HERSHEY_SIMPLEX,
-                    0.6,
-                    new Scalar(255, 255, 255, 0),
-                    1,
-                    opencv_imgproc.LINE_AA,
-                    false);
-        }
-
-        // 保存结果图像
-        String resultFilename = "result_" + filename;
-        Path resultPath = resultDir.resolve(resultFilename);
-        opencv_imgcodecs.imwrite(resultPath.toString(), image);
+        // 调用服务进行检测并获取结果文件名
+        String resultFilename = detectionService.detectImage(filePath.toString());
 
         // 准备响应
         Map<String, Object> response = new HashMap<>();
-        response.put("detections", detections.size());
-        response.put("objects", detections);
         response.put("resultFile", resultFilename);
 
         return ResponseEntity.ok(response);
-
     }
-
 
     /**
      * 获取结果图像文件
@@ -158,5 +87,41 @@ public class DetectionController {
         return ResponseEntity.ok()
                 .contentType(MediaType.IMAGE_JPEG)
                 .body(imageBytes);
+    }
+
+    @PostMapping(value = "/detect-video", produces = MediaType.APPLICATION_JSON_VALUE)
+    @Operation(summary = "处理视频上传和对象检测", description = "传入视频")
+    public ResponseEntity<?> detectObjectsInVideo(@RequestParam("file") MultipartFile file) throws IOException {
+        String filename = file.getOriginalFilename();
+        Path filePath = uploadDir.resolve(filename);
+        file.transferTo(filePath.toFile());
+
+        String resultFilename = detectionService.detectVideo(filePath.toString());
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("resultFile", resultFilename);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/result-video")
+    @Operation(summary = "获取结果视频文件")
+    public ResponseEntity<Resource> getResultVideo(@RequestParam("filename") String filename) throws IOException {
+        Path resultPath = resultDir.resolve(filename);
+        File resultFile = resultPath.toFile();
+
+        if (!resultFile.exists()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Resource resource = new FileSystemResource(resultFile);
+        String contentType = Files.probeContentType(resultPath);
+        if (contentType == null) {
+            contentType = "video/mp4"; // 默认视频类型
+        }
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .body(resource);
     }
 }

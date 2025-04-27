@@ -1,4 +1,4 @@
-///*
+//package com.example.yolo123;/*
 //MIT License
 //
 //Copyright (c) 2021 Florian Bruggisser
@@ -23,7 +23,7 @@
 //*/
 //
 ///*
-//YOLONet Example Information
+//com.example.yolo123.YOLONet Example Information
 //---------------------------
 //
 //This is a basic implementation of a YOLO object detection network inference example.
