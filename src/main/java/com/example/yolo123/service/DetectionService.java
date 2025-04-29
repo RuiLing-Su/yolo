@@ -1,5 +1,6 @@
 package com.example.yolo123.service;
 
+import com.example.yolo123.common.Inference;
 import com.example.yolo123.model.Detection;
 import lombok.extern.slf4j.Slf4j;
 import org.bytedeco.javacv.FFmpegFrameGrabber;
@@ -121,7 +122,7 @@ public class DetectionService {
      * @param image 图像
      * @param detections 检测结果列表
      */
-    private void drawDetections(Mat image, List<Detection> detections) {
+    void drawDetections(Mat image, List<Detection> detections) {
         for (Detection detection : detections) {
             // 绘制边界框
             opencv_imgproc.rectangle(
@@ -176,5 +177,9 @@ public class DetectionService {
                     opencv_imgproc.LINE_AA,
                     false);
         }
+    }
+
+    public List<Detection> runInference(Mat image) {
+        return inference.runInference(image);
     }
 }

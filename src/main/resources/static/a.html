@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>云边端协同系统架构图</title>
+    <style>
+        body { font-family: sans-serif; display: flex; justify-content: space-around; align-items: center; min-height: 300px; }
+        .layer { border: 1px solid #ccc; padding: 20px; text-align: center; }
+        .arrow { font-size: 2em; margin: 0 10px; }
+        .terminal-group { border: 1px dashed #eee; padding: 10px; margin-top: 10px; }
+    </style>
+</head>
+<body>
+
+<div class="layer">
+    <h3>端层 (教室终端)</h3>
+    <div class="terminal-group">
+        <div>终端设备 1</div>
+        <div>终端设备 2</div>
+        <div>...</div>
+        <div>终端设备 N</div>
+    </div>
+    <p>局域网互通 (私有IP)</p>
+    <p>数据汇集</p>
+</div>
+
+<span class="arrow">&rarr;</span>
+
+<div class="layer">
+    <h3>边层 (教师端)</h3>
+    <div>教师机 (边缘节点)</div>
+    <p>收集 & 预处理终端数据</p>
+    <p>统一发送数据至云端</p>
+    <p>部分功能与平台/终端重合</p>
+</div>
+
+<span class="arrow">&rarr;</span>
+
+<div class="layer">
+    <h3>云层 (数据中台)</h3>
+    <p>自动维护数据</p>
+    <p>提供管控功能</p>
+    <div>中控机 (整体管理)</div>
+</div>
+
+</body>
+</html>

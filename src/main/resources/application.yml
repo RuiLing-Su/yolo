@@ -1,22 +1,49 @@
-# ?????
-server:
-  port: 8099
-
-# ??????
 spring:
+  profiles:
+    active: dev # 默认激活 prod 环境
+  jackson:
+    # 返回格式化日期
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  mvc:
+    static-path-pattern: /**
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 10MB
 
-# Knife4j??
+server:
+  port: ${ehome.port}
+
+ehome:
+  # ehome5.0秘钥123456
+  secret-key: ${ehome.secret-key}
+  # cms服务端口
+  cms-port: ${ehome.cms-port}
+  # 流媒体预览端口
+  sms-preview-port: ${ehome.sms-preview-port}
+  # 流媒体回放端口
+  sms-back-port: ${ehome.sms-back-port}
+  # ss服务端口
+  ss-port: ${ehome.ss-port}
+  # ss文件保存路径
+  ss-filepath: ${ehome.ss-filepath}
+  # 回放视频存储地址
+  playBack-videoPath: ${ehome.playBack-videoPath}
+  Alarm:
+    # Alarm监听端口
+    Alarm-Tcp-port: ${ehome.Alarm.Alarm-Tcp-port}
+    Alarm-Udp-port: ${ehome.Alarm.Alarm-Udp-port}
+    Alarm-Server-type: ${ehome.Alarm.Alarm-Server-type}
+    EventInfoPrintType: ${ehome.Alarm.EventInfoPrintType}
+
+
 knife4j:
   enable: true
   setting:
     language: zh_CN
 
-# ??????
 app:
-  upload-dir: C:/Users/Su180/IdeaProjects/yolocv/yolo123/uploads
-  result-dir: C:/Users/Su180/IdeaProjects/yolocv/yolo123/results
-  model-path: C:/Users/Su180/IdeaProjects/yolocv/yolo123/src/main/resources/yolo-model/yolov5nu.onnx
+  upload-dir: ${app.upload-dir}
+  result-dir: ${app.result-dir}
+  model-path: ${app.model-path}

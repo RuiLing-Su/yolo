@@ -1,13 +1,13 @@
 package com.example.yolo123.controller;
 
 import com.example.yolo123.service.DetectionService;
+import com.example.yolo123.service.StreamService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +27,6 @@ import java.util.Map;
 @Tag(name = "检测")
 public class DetectionController {
     private final DetectionService detectionService;
-
     private final Path uploadDir;
     private final Path resultDir;
 
@@ -39,12 +38,8 @@ public class DetectionController {
         this.uploadDir = Paths.get(uploadDirPath);
         this.resultDir = Paths.get(resultDirPath);
         try {
-            if (!Files.exists(uploadDir)) {
-                Files.createDirectories(uploadDir);
-            }
-            if (!Files.exists(resultDir)) {
-                Files.createDirectories(resultDir);
-            }
+            Files.createDirectories(uploadDir);
+            Files.createDirectories(resultDir);
         } catch (IOException e) {
             throw new RuntimeException("无法创建上传和结果目录", e);
         }
