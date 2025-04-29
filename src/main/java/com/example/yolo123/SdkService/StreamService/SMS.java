@@ -408,59 +408,6 @@ public class SMS {
     }
 
     /**
-     * 开启预览（使用 FFmpeg）
-     *
-     * @param luserID               用户 ID
-     * @param channel               通道号
-     * @param completableFutureOne  异步完成标志
-     */
-    public void RealPlayWithFFmpeg(int luserID, int channel, CompletableFuture<String> completableFutureOne) {
-        if (LuserIDandSessionMap.containsKey(luserID)) {
-            log.error("禁止重复推流!");
-            completableFutureOne.complete("false");
-            return;
-        }
-
-        HCISUPCMS.NET_EHOME_PREVIEWINFO_IN struPreviewIn = new HCISUPCMS.NET_EHOME_PREVIEWINFO_IN();
-        struPreviewIn.iChannel = channel;
-        struPreviewIn.dwLinkMode = 0;
-        struPreviewIn.dwStreamType = 0;
-        struPreviewIn.struStreamSever.szIP = ehomePuIp.getBytes();
-        struPreviewIn.struStreamSever.wPort = ehomeSmsPreViewPort;
-        struPreviewIn.write();
-
-        HCISUPCMS.NET_EHOME_PREVIEWINFO_OUT struPreviewOut = new HCISUPCMS.NET_EHOME_PREVIEWINFO_OUT();
-        if (!CMS.hcISUPCMS.NET_ECMS_StartGetRealStream(luserID, struPreviewIn, struPreviewOut)) {
-            log.error("请求开始预览失败, 错误码: " + CMS.hcISUPCMS.NET_ECMS_GetLastError());
-            completableFutureOne.complete("false");
-            return;
-        }
-        struPreviewOut.read();
-
-        HCISUPCMS.NET_EHOME_PUSHSTREAM_IN struPushInfoIn = new HCISUPCMS.NET_EHOME_PUSHSTREAM_IN();
-        struPushInfoIn.read();
-        struPushInfoIn.dwSize = struPushInfoIn.size();
-        struPushInfoIn.lSessionID = struPreviewOut.lSessionID;
-        struPushInfoIn.write();
-
-        HCISUPCMS.NET_EHOME_PUSHSTREAM_OUT struPushInfoOut = new HCISUPCMS.NET_EHOME_PUSHSTREAM_OUT();
-        struPushInfoOut.read();
-        struPushInfoOut.dwSize = struPushInfoOut.size();
-        struPushInfoOut.write();
-
-        if (!CMS.hcISUPCMS.NET_ECMS_StartPushRealStream(luserID, struPushInfoIn, struPushInfoOut)) {
-            log.error("CMS 向设备发送请求预览实时码流失败, 错误码: " + CMS.hcISUPCMS.NET_ECMS_GetLastError());
-            completableFutureOne.complete("false");
-        } else {
-            log.info("CMS 向设备发送请求预览实时码流成功, sessionID: " + struPushInfoIn.lSessionID);
-            HandleStreamV2 handler = new HandleStreamV2(luserID);
-            concurrentMap.put(struPushInfoIn.lSessionID, handler);
-            LuserIDandSessionMap.put(luserID, struPushInfoIn.lSessionID);
-            completableFutureOne.complete("true");
-        }
-    }
-
-    /**
      * 停止预览
      *
      * @param luserID        用户 ID
